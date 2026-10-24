@@ -8,7 +8,7 @@ function cxs(z){return fmt(z.re)+(z.im<0?' − j':' + j')+fmt(Math.abs(z.im))}
 function pol(z){return fmt(Math.hypot(z.re,z.im))+'∠'+fmt(Math.atan2(z.im,z.re)/D)+'°'}
 function o(r){return fmt(r)+' Ω'}
 function st(q,l,u,a,h,f,at){return {q:q,l:l,u:u,a:a,h:h,f:f,at:at||0}}
-function stc(q,l,a,h,f){return {q:q,l:l,u:'Ω',a:a,h:h,f:f,cx:1}}
+function stc(q,l,a,h,f,u){return {q:q,l:l,u:u||'',a:a,h:h,f:f,cx:1}}
 var RV=[10,15,20,22,27,33,47,56,68,100];
 
 /* ---------- geradores de problemas ---------- */
@@ -41,23 +41,26 @@ function cxOps(){var r=function(){return pick([1,2,3,4,5,6,7,8,9])*pick([1,-1])}
  stc('Calcule z1 · z2.','z1·z2',p,'Use a distributiva e lembre que j² = −1. Ou passe para a forma polar.','(a·c − b·d) + j(a·d + b·c)'),
  stc('Calcule z1 / z2.','z1/z2',q,'Multiplique em cima e embaixo pelo conjugado de z2.','z1·conj(z2) / |z2|²')]}}
 function circAC(V,f,items){return {ac:1,src:V+' V · '+f+' Hz',ser:items}}
-function rlc(){var V=pick([110,127,220]),f=pick([50,60]),R=pick([10,15,20,30,40]),Lm=pick([20,40,50,80,100]),Cu=pick([50,100,150,200]),w=2*Math.PI*f,XL=w*Lm/1000,XC=1e6/(w*Cu),X=XL-XC,Z=Math.hypot(R,X),I=V/Z,ph=Math.atan2(X,R)/D;
- return {tt:'Circuito RLC em série',txt:'Um circuito RLC série é ligado a '+V+' V, '+f+' Hz, com R = '+o(R)+', L = '+Lm+' mH e C = '+Cu+' µF.',
+function rlc(){var V=pick([110,127,220]),f=pick([50,60]),R=pick([10,15,20,30,40]),Lm=pick([20,40,50,80,100]),Cu=pick([50,100,150,200]),w=2*Math.PI*f,XL=w*Lm/1000,XC=1e6/(w*Cu),X=XL-XC,Z=Math.hypot(R,X),I=V/Z,ph=Math.atan2(X,R)/D,
+ Zc={re:R,im:X},Ic={re:I*Math.cos(ph*D),im:-I*Math.sin(ph*D)},VL={re:-XL*Ic.im,im:XL*Ic.re};
+ return {tt:'Circuito RLC em série',txt:'Um circuito RLC série é ligado a '+V+' V, '+f+' Hz, com R = '+o(R)+', L = '+Lm+' mH e C = '+Cu+' µF. Tome a tensão da fonte como referência angular (V∠0°).',
  circ:circAC(V,f,[['R',o(R)],['L',Lm+' mH'],['C',Cu+' µF']]),fin:{vals:[fmt(I*R)+' V',fmt(I*XL)+' V',fmt(I*XC)+' V'],center:'I = '+fmt(I)+' A'},
- diag:{t:'ph',V:V,I:I,phi:ph*D},leg:ph>0.5?'Circuito indutivo: a corrente (roxa) está atrasada em relação à tensão (azul).':ph<-0.5?'Circuito capacitivo: a corrente (roxa) está adiantada em relação à tensão (azul).':'Circuito em ressonância: tensão e corrente em fase.',
+ diag:{t:'ph',V:V,I:I,phi:ph*D},leg:ph>0.5?'Circuito indutivo: a corrente (amarela ou azul-clara) está atrasada em relação à tensão.':ph<-0.5?'Circuito capacitivo: a corrente está adiantada em relação à tensão.':'Circuito em ressonância: tensão e corrente em fase.',
  steps:[st('Qual é a reatância indutiva XL?','XL','Ω',XL,'XL = 2·π·f·L, com L em henry (mH ÷ 1000).','XL = 2π · '+f+' · '+Lm/1000),
  st('Qual é a reatância capacitiva XC?','XC','Ω',XC,'XC = 1 / (2·π·f·C), com C em farad (µF ÷ 1.000.000).','XC = 1 / (2π · '+f+' · '+Cu+'e-6)'),
- stc('Escreva a impedância Z = R + j(XL − XC).','Z',{re:R,im:X},'A parte real é R. A parte imaginária é a diferença entre XL e XC.','Z = '+R+' + j('+fmt(XL)+' − '+fmt(XC)+')'),
- st('Qual é a corrente do circuito (valor eficaz)?','I','A',I,'Lei de Ohm com o módulo da impedância.','I = V / |Z| = '+V+' / '+fmt(Z)),
- st('Qual é o ângulo φ da impedância, em graus?','φ','°',ph,'Arco tangente de (parte imaginária / parte real) de Z. Positivo: corrente atrasada.','φ = arctg('+fmt(X)+' / '+R+')',0.6),
- st('Qual é o fator de potência?','FP','',R/Z,'É o cosseno do ângulo φ, ou a razão R / |Z|.','FP = cos φ = R / |Z| = '+R+' / '+fmt(Z))]}}
+ stc('Quais são os complexos? Escreva a impedância complexa do indutor, ZL.','ZL',{re:0,im:XL},'O indutor é um imaginário puro positivo: ZL = jXL. A parte real é zero.','ZL = j'+fmt(XL),'Ω'),
+ stc('Escreva a impedância complexa do capacitor, ZC.','ZC',{re:0,im:-XC},'O capacitor é um imaginário puro negativo: ZC = −jXC. A parte real é zero.','ZC = −j'+fmt(XC),'Ω'),
+ stc('Escreva a impedância total Z = R + ZL + ZC.','Z',Zc,'Some os complexos: reais com reais (só o R) e imaginários com imaginários (XL − XC).','Z = '+R+' + j'+fmt(XL)+' − j'+fmt(XC),'Ω'),
+ stc('Qual é a corrente complexa I? (tensão como referência, V∠0°)','I',Ic,'Divida V∠0° pela impedância Z. Na forma polar, divida os módulos e subtraia os ângulos.','I = '+V+'∠0° / ('+pol(Zc)+')','A'),
+ stc('Qual é a tensão complexa no indutor, VL = I · ZL?','VL',VL,'Lei de Ohm com complexos. Na forma polar, multiplique os módulos e some os ângulos (ZL tem ângulo de +90°).','VL = ('+pol(Ic)+') · ('+fmt(XL)+'∠90°)','V'),
+ st('Qual é o fator de potência?','FP','',R/Z,'É o cosseno do ângulo da impedância Z, ou a razão entre a parte real de Z e o módulo de Z.','FP = cos φ = R / |Z| = '+R+' / '+fmt(Z))]}}
 function capCA(){var V=pick([110,127,220]),f=pick([50,60]),Cu=pick([10,20,47,100]),XC=1e6/(2*Math.PI*f*Cu),I=V/XC;
- return {tt:'Capacitor em CA',txt:'Um capacitor de '+Cu+' µF é ligado a uma fonte de '+V+' V, '+f+' Hz.',
+ return {tt:'Capacitor em CA',txt:'Um capacitor de '+Cu+' µF é ligado a uma fonte de '+V+' V, '+f+' Hz. Tome a tensão como referência (V∠0°).',
  circ:circAC(V,f,[['C',Cu+' µF']]),fin:{vals:[fmt(V)+' V'],center:'I = '+fmt(I)+' A'},
  diag:{t:'ph',V:V,I:I,phi:-Math.PI/2},leg:'No capacitor, a corrente está 90° adiantada em relação à tensão.',
  steps:[st('Qual é a reatância capacitiva XC?','XC','Ω',XC,'XC = 1 / (2·π·f·C), com C em farad.','XC = 1 / (2π · '+f+' · '+Cu+'e-6)'),
- st('Qual é a corrente (valor eficaz)?','I','A',I,'Lei de Ohm com a reatância no lugar da resistência.','I = V / XC = '+V+' / '+fmt(XC)),
- st('Qual é o ângulo da corrente em relação à tensão, em graus? (adiantada = positivo)','φi','°',90,'No capacitor, a corrente passa pelo máximo antes da tensão.','Corrente adiantada de 90°',0.6),
+ stc('Quais são os complexos? Escreva a impedância complexa do capacitor, ZC.','ZC',{re:0,im:-XC},'O capacitor é um imaginário puro negativo: ZC = −jXC.','ZC = −j'+fmt(XC),'Ω'),
+ stc('Qual é a corrente complexa I = V / ZC?','I',{re:0,im:I},'Divida V∠0° por ZC (que tem ângulo −90°). Os ângulos se subtraem: a corrente fica adiantada.','I = '+V+'∠0° / '+fmt(XC)+'∠−90° = '+fmt(I)+'∠90°','A'),
  st('Qual é a potência reativa Q do capacitor?','Q','VAr',V*I,'Em um elemento puramente reativo, Q = V · I.','Q = V · I = '+V+' · '+fmt(I))]}}
 function fpCorr(){var Pu=pick([3,5.5,7.5,11]),eta=pick([0.85,0.88,0.9,0.92]),V=pick([127,220,380]),f=60,fp1=pick([0.7,0.75,0.8,0.82]),fp2=pick([0.92,0.95]),
  P=Pu/eta,S1=P/fp1,Q1=Math.sqrt(S1*S1-P*P),S2=P/fp2,Q2=Math.sqrt(S2*S2-P*P),Qc=Q1-Q2,Xc=V*V/(Qc*1000),C=1e6/(2*Math.PI*f*Xc);
@@ -66,8 +69,10 @@ function fpCorr(){var Pu=pick([3,5.5,7.5,11]),eta=pick([0.85,0.88,0.9,0.92]),V=p
  steps:[st('Qual é a potência ativa absorvida da rede?','P','kW',P,'A potência útil é menor que a absorvida por causa do rendimento.','P = Pútil / η = '+fmt(Pu)+' / '+eta),
  st('Qual é a potência aparente na situação 1?','S1','kVA',S1,'S = P / FP.','S1 = '+fmt(P)+' / '+fp1),
  st('Qual é a potência reativa na situação 1?','Q1','kVAr',Q1,'Triângulo de potências: Q = √(S² − P²).','Q1 = √('+fmt(S1)+'² − '+fmt(P)+'²)'),
+ stc('Escreva a potência complexa da situação 1: S1 = P + jQ1.','S1 (complexa)',{re:P,im:Q1},'Parte real: P. Parte imaginária: Q1 (positiva, pois a carga é indutiva).','S1 = '+fmt(P)+' + j'+fmt(Q1),'kVA'),
  st('Qual é a potência aparente na situação 2?','S2','kVA',S2,'Mesma fórmula, com o FP desejado.','S2 = '+fmt(P)+' / '+fp2),
  st('Qual é a potência reativa na situação 2?','Q2','kVAr',Q2,'Q = √(S² − P²) com S2.','Q2 = √('+fmt(S2)+'² − '+fmt(P)+'²)'),
+ stc('Escreva a potência complexa da situação 2: S2 = P + jQ2.','S2 (complexa)',{re:P,im:Q2},'Parte real: P (não muda). Parte imaginária: Q2, o reativo que sobrou.','S2 = '+fmt(P)+' + j'+fmt(Q2),'kVA'),
  st('Qual é a potência do banco de capacitores?','Qc','kVAr',Qc,'O capacitor tem que retirar a diferença entre o reativo de antes e o de depois.','Qc = Q1 − Q2 = '+fmt(Q1)+' − '+fmt(Q2)),
  st('Qual é a reatância capacitiva do banco?','Xc','Ω',Xc,'Xc = V² / Qc, com Qc em VAr (kVAr × 1000).','Xc = '+V+'² / '+fmt(Qc*1000)),
  st('Qual é a capacitância do banco?','C','µF',C,'C = 1 / (2·π·f·Xc). O resultado em farad é pequeno, converta para µF.','C = 1 / (2π · '+f+' · '+fmt(Xc)+')')]}}
@@ -77,6 +82,7 @@ function triPot(){var V=pick([127,220]),I=pick([10,15,20,25,30]),fp=pick([0.6,0.
  steps:[st('Qual é a potência aparente S?','S','kVA',S,'Tensão vezes corrente.','S = V · I = '+V+' · '+I),
  st('Qual é a potência ativa P?','P','kW',P,'P = S · FP.','P = '+fmt(S)+' · '+fp),
  st('Qual é a potência reativa Q?','Q','kVAr',Q,'Q = √(S² − P²).','Q = √('+fmt(S)+'² − '+fmt(P)+'²)'),
+ stc('Escreva a potência complexa S = P + jQ.','S (complexa)',{re:P,im:Q},'Parte real: potência ativa. Parte imaginária: potência reativa (positiva em carga indutiva).','S = '+fmt(P)+' + j'+fmt(Q),'kVA'),
  st('Qual é o ângulo φ, em graus?','φ','°',Math.acos(fp)/D,'φ é o arco cosseno do fator de potência.','φ = arccos('+fp+')',0.6)]}}
 var T=[{n:'Corrente contínua',ic:'🔋',d:'Ohm, série, paralelo e potência',g:[dcSerie,dcMisto]},
  {n:'Números complexos',ic:'➕',d:'Forma retangular, polar e operações',g:[cxConv,cxOps]},
