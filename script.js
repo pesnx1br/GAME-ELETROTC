@@ -132,7 +132,7 @@ function drawCircuit(c,s,fin,ts){
  if(hp)s.par.forEach(function(p,k){bx(k?Rr:xa,my,44,40,p[0],p[1],n+k)});
  if(fin){x.fillStyle=acc;x.font='600 12px '+F;
   (fin.vals||[]).forEach(function(v,i){x.textAlign='center';x.fillText(open?'0 V':v,xs[i],T+30)});
-  x.textAlign='right';(fin.par||[]).forEach(function(v,k){x.fillText(open?'0 A':v,(k?Rr:xa)-26,my+4)});
+  x.textAlign='right';(fin.par||[]).forEach(function(v,k){x.fillText(open?'0 A':v,(k?Rr:xa)-8,my+40)});
   x.textAlign='center';x.font='600 14px '+F;x.fillText(open?'I = 0 A':fin.center,(L+end)/2,my+5)}}
 function dPh(c,d,ts){
  var g=setup(c,240),x=g.x,W=g.w,H=g.h,acc=col('--acc'),cu=col('--cur'),mut=col('--mut'),line=col('--line');
