@@ -14,14 +14,14 @@ var RV=[10,15,20,22,27,33,47,56,68,100];
 /* ---------- geradores de problemas ---------- */
 function dcSerie(){var V=pick([12,24,48,110,127,220]),R=[pick(RV),pick(RV),pick(RV)],Rq=R[0]+R[1]+R[2],I=V/Rq;
  return {tt:'Circuito série em CC',txt:'Uma fonte de '+V+' V alimenta três resistores em série: R1 = '+o(R[0])+', R2 = '+o(R[1])+' e R3 = '+o(R[2])+'.',
- circ:{src:V+' V',ser:R.map(function(r,i){return ['R'+(i+1),o(r)]})},fin:{vals:R.map(function(r){return fmt(I*r)+' V'}),center:'I = '+fmt(I)+' A'},
+ circ:{src:V+' V',ser:R.map(function(r,i){return ['R'+(i+1),o(r)]})},fin:{vals:R.map(function(r){return fmt(I*r)+' V'}),center:'I = '+fmt(I)+' A',I:I,pw:R.map(function(r){return I*I*r}),info:R.map(function(r,i){return 'R'+(i+1)+' = '+o(r)+': tensão '+fmt(I*r)+' V, corrente '+fmt(I)+' A, potência '+fmt(I*I*r)+' W.'})},
  steps:[st('Qual é a resistência equivalente do circuito?','Req','Ω',Rq,'Em série, as resistências se somam.','Req = '+R.join(' + ')),
  st('Qual é a corrente que circula no circuito?','I','A',I,'Lei de Ohm com a tensão da fonte e a resistência equivalente.','I = V / Req = '+V+' / '+Rq),
  st('Qual é a tensão sobre o resistor R2?','V2','V',I*R[1],'A mesma corrente passa por todos os resistores. Multiplique pela resistência de R2.','V2 = I · R2 = '+fmt(I)+' · '+R[1]),
  st('Qual é a potência fornecida pela fonte?','P','W',V*I,'Potência é tensão vezes corrente.','P = V · I = '+V+' · '+fmt(I))]}}
 function dcMisto(){var pr=pick([[20,30],[10,40],[30,60],[40,60],[15,30],[20,20],[12,24],[60,60]]),R1=pick([5,10,15,20,25]),V=pick([12,24,48,60,120]),R2=pr[0],R3=pr[1],Rp=R2*R3/(R2+R3),Rq=R1+Rp,I=V/Rq,Vp=I*Rp;
  return {tt:'Circuito misto em CC',txt:'Uma fonte de '+V+' V alimenta R1 = '+o(R1)+' em série com a associação em paralelo de R2 = '+o(R2)+' e R3 = '+o(R3)+'.',
- circ:{src:V+' V',ser:[['R1',o(R1)]],par:[['R2',o(R2)],['R3',o(R3)]]},fin:{vals:[fmt(I*R1)+' V'],par:[fmt(Vp/R2)+' A',fmt(Vp/R3)+' A'],center:'I = '+fmt(I)+' A'},
+ circ:{src:V+' V',ser:[['R1',o(R1)]],par:[['R2',o(R2)],['R3',o(R3)]]},fin:{vals:[fmt(I*R1)+' V'],par:[fmt(Vp/R2)+' A',fmt(Vp/R3)+' A'],center:'I = '+fmt(I)+' A',I:I,Ib:[Vp/R2,Vp/R3],pw:[I*I*R1,Vp*Vp/R2,Vp*Vp/R3],info:['R1 = '+o(R1)+': tensão '+fmt(I*R1)+' V, corrente '+fmt(I)+' A, potência '+fmt(I*I*R1)+' W.','R2 = '+o(R2)+': tensão '+fmt(Vp)+' V, corrente '+fmt(Vp/R2)+' A, potência '+fmt(Vp*Vp/R2)+' W.','R3 = '+o(R3)+': tensão '+fmt(Vp)+' V, corrente '+fmt(Vp/R3)+' A, potência '+fmt(Vp*Vp/R3)+' W.']},
  steps:[st('Qual é a resistência equivalente do paralelo (R2 com R3)?','Rp','Ω',Rp,'Para dois resistores em paralelo, use produto sobre soma.','Rp = (R2 · R3) / (R2 + R3) = ('+R2+' · '+R3+') / '+(R2+R3)),
  st('Qual é a resistência equivalente total?','Req','Ω',Rq,'R1 está em série com o paralelo: some os dois.','Req = R1 + Rp = '+R1+' + '+fmt(Rp)),
  st('Qual é a corrente total fornecida pela fonte?','I','A',I,'Lei de Ohm com a resistência equivalente total.','I = V / Req = '+V+' / '+fmt(Rq)),
@@ -44,7 +44,7 @@ function circAC(V,f,items){return {ac:1,src:V+' V · '+f+' Hz',ser:items}}
 function rlc(){var V=pick([110,127,220]),f=pick([50,60]),R=pick([10,15,20,30,40]),Lm=pick([20,40,50,80,100]),Cu=pick([50,100,150,200]),w=2*Math.PI*f,XL=w*Lm/1000,XC=1e6/(w*Cu),X=XL-XC,Z=Math.hypot(R,X),I=V/Z,ph=Math.atan2(X,R)/D,
  Zc={re:R,im:X},Ic={re:I*Math.cos(ph*D),im:-I*Math.sin(ph*D)},VL={re:-XL*Ic.im,im:XL*Ic.re};
  return {tt:'Circuito RLC em série',txt:'Um circuito RLC série é ligado a '+V+' V, '+f+' Hz, com R = '+o(R)+', L = '+Lm+' mH e C = '+Cu+' µF. Tome a tensão da fonte como referência angular (V∠0°).',
- circ:circAC(V,f,[['R',o(R)],['L',Lm+' mH'],['C',Cu+' µF']]),fin:{vals:[fmt(I*R)+' V',fmt(I*XL)+' V',fmt(I*XC)+' V'],center:'I = '+fmt(I)+' A'},
+ circ:circAC(V,f,[['R',o(R)],['L',Lm+' mH'],['C',Cu+' µF']]),fin:{vals:[fmt(I*R)+' V',fmt(I*XL)+' V',fmt(I*XC)+' V'],center:'I = '+fmt(I)+' A',I:I,pw:[I*I*R,0,0],info:['R = '+o(R)+': tensão '+fmt(I*R)+' V (em fase com a corrente), potência '+fmt(I*I*R)+' W.','L = '+Lm+' mH: XL = '+o(XL)+', tensão '+fmt(I*XL)+' V (adiantada 90° da corrente), potência ativa 0 W.','C = '+Cu+' µF: XC = '+o(XC)+', tensão '+fmt(I*XC)+' V (atrasada 90° da corrente), potência ativa 0 W.']},
  diag:{t:'ph',V:V,I:I,phi:ph*D},leg:ph>0.5?'Circuito indutivo: a corrente (amarela ou azul-clara) está atrasada em relação à tensão.':ph<-0.5?'Circuito capacitivo: a corrente está adiantada em relação à tensão.':'Circuito em ressonância: tensão e corrente em fase.',
  steps:[st('Qual é a reatância indutiva XL?','XL','Ω',XL,'XL = 2·π·f·L, com L em henry (mH ÷ 1000).','XL = 2π · '+f+' · '+Lm/1000),
  st('Qual é a reatância capacitiva XC?','XC','Ω',XC,'XC = 1 / (2·π·f·C), com C em farad (µF ÷ 1.000.000).','XC = 1 / (2π · '+f+' · '+Cu+'e-6)'),
@@ -56,7 +56,7 @@ function rlc(){var V=pick([110,127,220]),f=pick([50,60]),R=pick([10,15,20,30,40]
  st('Qual é o fator de potência?','FP','',R/Z,'É o cosseno do ângulo da impedância Z, ou a razão entre a parte real de Z e o módulo de Z.','FP = cos φ = R / |Z| = '+R+' / '+fmt(Z))]}}
 function capCA(){var V=pick([110,127,220]),f=pick([50,60]),Cu=pick([10,20,47,100]),XC=1e6/(2*Math.PI*f*Cu),I=V/XC;
  return {tt:'Capacitor em CA',txt:'Um capacitor de '+Cu+' µF é ligado a uma fonte de '+V+' V, '+f+' Hz. Tome a tensão como referência (V∠0°).',
- circ:circAC(V,f,[['C',Cu+' µF']]),fin:{vals:[fmt(V)+' V'],center:'I = '+fmt(I)+' A'},
+ circ:circAC(V,f,[['C',Cu+' µF']]),fin:{vals:[fmt(V)+' V'],center:'I = '+fmt(I)+' A',I:I,pw:[0],info:['C = '+Cu+' µF: XC = '+o(XC)+', tensão '+fmt(V)+' V, corrente '+fmt(I)+' A adiantada 90°, potência ativa 0 W.']},
  diag:{t:'ph',V:V,I:I,phi:-Math.PI/2},leg:'No capacitor, a corrente está 90° adiantada em relação à tensão.',
  steps:[st('Qual é a reatância capacitiva XC?','XC','Ω',XC,'XC = 1 / (2·π·f·C), com C em farad.','XC = 1 / (2π · '+f+' · '+Cu+'e-6)'),
  stc('Quais são os complexos? Escreva a impedância complexa do capacitor, ZC.','ZC',{re:0,im:-XC},'O capacitor é um imaginário puro negativo: ZC = −jXC.','ZC = −j'+fmt(XC),'Ω'),
@@ -102,21 +102,38 @@ function ansTxt(s){return s.cx?cxs(s.a)+'  =  '+pol(s.a):fmt(s.a)+(s.u?' '+s.u:'
 function setup(c,h){var dpr=window.devicePixelRatio||1,w=Math.max(220,c.parentNode.clientWidth-32);
  if(c._w!==w||c._h!==h){c.width=w*dpr;c.height=h*dpr;c.style.height=h+'px';c._w=w;c._h=h}
  var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);return {x:x,w:w,h:h}}
-function drawCircuit(c,s,fin){
- var g=setup(c,fin?210:190),x=g.x,W=g.w,H=g.h,ink=col('--ink'),acc=col('--acc'),card=col('--card'),L=56,Rr=W-26,T=44,B=H-40,my=(T+B)/2,n=s.ser.length,hp=!!s.par,xa=Rr-90,end=hp?xa:Rr;
+function drawCircuit(c,s,fin,ts){
+ var g=setup(c,fin?230:190),x=g.x,W=g.w,H=g.h,ink=col('--ink'),acc=col('--acc'),card=col('--card'),L=40,Rr=W-24,T=44,B=fin?H-62:H-40,my=(T+B)/2,n=s.ser.length,hp=!!s.par,xa=Rr-90,end=hp?xa:Rr,t=(ts||0)/1000,open=!!(fin&&s.open),sx=(L+end)/2;
  var ln=function(a,b,c2,d){x.beginPath();x.moveTo(a,b);x.lineTo(c2,d);x.stroke()};
- var bx=function(cx,cy,w,h,a,b){x.fillStyle=card;x.fillRect(cx-w/2,cy-h/2,w,h);x.strokeRect(cx-w/2,cy-h/2,w,h);x.fillStyle=ink;x.font='600 11px "IBM Plex Sans",sans-serif';x.fillText(a,cx,cy-2);x.font='11px "IBM Plex Sans",sans-serif';x.fillText(b,cx,cy+11)};
- x.lineWidth=2;x.strokeStyle=ink;x.fillStyle=ink;x.textAlign='center';x.font='11px "IBM Plex Sans",sans-serif';
- ln(L,T,Rr,T);ln(L,B,Rr,B);
+ var F='"IBM Plex Sans",sans-serif',mx=fin&&fin.pw?Math.max.apply(null,fin.pw):0;
+ c._hit=[];c._sw=fin?{x:sx,y:B,r:34}:null;c.style.cursor=fin?'pointer':'default';
+ var bx=function(cx,cy,w,h,a,b,i){var sel=fin&&s.sel===i;x.fillStyle=card;x.fillRect(cx-w/2,cy-h/2,w,h);
+  if(fin&&mx>0&&!open&&fin.pw[i]>0){x.globalAlpha=0.4*fin.pw[i]/mx;x.fillStyle=acc;x.fillRect(cx-w/2,cy-h/2,w,h);x.globalAlpha=1}
+  x.strokeStyle=sel?acc:ink;x.lineWidth=sel?3:2;x.strokeRect(cx-w/2,cy-h/2,w,h);x.lineWidth=2;x.strokeStyle=ink;
+  x.fillStyle=ink;x.textAlign='center';x.font='600 11px '+F;x.fillText(a,cx,cy-2);x.font='11px '+F;x.fillText(b,cx,cy+11);c._hit.push({x:cx,y:cy,w:w,h:h,i:i})};
+ var dots=function(pts,I){var len=[0],i;for(i=1;i<pts.length;i++)len.push(len[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+  var tot=len[len.length-1],sp=16,off=s.ac?9*Math.sin(t*3.2):(t*Math.min(150,30+60*Math.sqrt(I)));
+  x.fillStyle=acc;for(var d=((off%sp)+sp)%sp;d<tot;d+=sp){var k=1;while(k<len.length-1&&len[k]<d)k++;var u=(d-len[k-1])/(len[k]-len[k-1]);
+   x.beginPath();x.arc(pts[k-1][0]+(pts[k][0]-pts[k-1][0])*u,pts[k-1][1]+(pts[k][1]-pts[k-1][1])*u,3,0,7);x.fill()}};
+ x.lineWidth=2;x.strokeStyle=ink;x.fillStyle=ink;x.textAlign='center';x.font='11px '+F;
+ ln(L,T,Rr,T);if(fin){ln(L,B,sx-22,B);ln(sx+22,B,Rr,B)}else ln(L,B,Rr,B);
  if(s.ac){ln(L,T,L,my-16);ln(L,my+16,L,B);x.beginPath();x.arc(L,my,16,0,7);x.stroke();x.font='18px sans-serif';x.fillText('~',L,my+6)}
  else{ln(L,T,L,my-5);ln(L,my+5,L,B);ln(L-14,my-5,L+14,my-5);x.lineWidth=4;ln(L-7,my+5,L+7,my+5);x.lineWidth=2}
- x.font='11px "IBM Plex Sans",sans-serif';x.fillStyle=ink;x.fillText(s.src,L+10,B+18);
- if(hp){ln(xa,T,xa,B);ln(Rr,T,Rr,B);s.par.forEach(function(p,k){bx(k?Rr:xa,my,44,40,p[0],p[1])})}else ln(Rr,T,Rr,B);
- var xs=[];s.ser.forEach(function(p,i){var cx=L+(end-L-30)*(i+1)/(n+1)+0;xs.push(cx);bx(cx,T,62,30,p[0],p[1])});
- if(fin){x.fillStyle=acc;x.font='600 12px "IBM Plex Sans",sans-serif';
-  (fin.vals||[]).forEach(function(v,i){x.textAlign='center';x.fillText(v,xs[i],T+30)});
-  x.textAlign='right';(fin.par||[]).forEach(function(v,k){x.fillText(v,(k?Rr:xa)-26,my+4)});
-  x.textAlign='center';x.font='600 14px "IBM Plex Sans",sans-serif';x.fillText(fin.center,(L+end)/2,my+5)}}
+ x.font='11px '+F;x.fillStyle=ink;x.textAlign='center';x.fillText(s.src,L+12,B+18);
+ if(hp){ln(xa,T,xa,B);ln(Rr,T,Rr,B)}else ln(Rr,T,Rr,B);
+ if(fin){
+  x.fillStyle=ink;[-22,22].forEach(function(d){x.beginPath();x.arc(sx+d,B,3.5,0,7);x.fill()});
+  x.strokeStyle=acc;x.lineWidth=3;if(open)ln(sx-22,B,sx+14,B-22);else ln(sx-22,B,sx+22,B);x.lineWidth=2;x.strokeStyle=ink;
+  x.fillStyle=acc;x.font='600 11px '+F;x.fillText(open?'chave aberta (toque)':'chave fechada (toque)',sx,B+32);
+  if(!open){var I=fin.I;
+   if(hp){dots([[L,my-8],[L,T],[xa,T]],I);dots([[xa,T],[xa,B]],fin.Ib[0]);dots([[xa,T],[Rr,T],[Rr,B]],fin.Ib[1]);dots([[Rr,B],[xa,B]],fin.Ib[1]);dots([[xa,B],[L,B],[L,my+8]],I)}
+   else dots([[L,my-8],[L,T],[Rr,T],[Rr,B],[L,B],[L,my+8]],I)}}
+ var xs=[];s.ser.forEach(function(p,i){var cx=L+20+(end-L-40)*(i+1)/(n+1);xs.push(cx);bx(cx,T,48,30,p[0],p[1],i)});
+ if(hp)s.par.forEach(function(p,k){bx(k?Rr:xa,my,44,40,p[0],p[1],n+k)});
+ if(fin){x.fillStyle=acc;x.font='600 12px '+F;
+  (fin.vals||[]).forEach(function(v,i){x.textAlign='center';x.fillText(open?'0 V':v,xs[i],T+30)});
+  x.textAlign='right';(fin.par||[]).forEach(function(v,k){x.fillText(open?'0 A':v,(k?Rr:xa)-26,my+4)});
+  x.textAlign='center';x.font='600 14px '+F;x.fillText(open?'I = 0 A':fin.center,(L+end)/2,my+5)}}
 function dPh(c,d,ts){
  var g=setup(c,240),x=g.x,W=g.w,H=g.h,acc=col('--acc'),cu=col('--cur'),mut=col('--mut'),line=col('--line');
  var th=ts/1000*Math.PI*0.5,phi=d.phi,R0=Math.min(H*0.36,W*0.2),cx=R0+26,cy=H/2-8,Lv=R0*0.9,Li=R0*0.6,wx=cx+R0+40,wl=W-wx-8,ppr=wl/(4*Math.PI);
@@ -153,7 +170,7 @@ function save(){try{localStorage.setItem('estudo-eletro',JSON.stringify(S))}catc
 function menu(){
  $('menu').innerHTML='<p class="note">Pontos acumulados: <b>'+S.pts+'</b></p><div class="menu">'+T.map(function(t,i){return '<button class="mc" type="button" data-i="'+i+'"><span class="mi">'+t.ic+'</span><b>'+t.n+'</b><small>'+t.d+'</small><small>Resolvidos: '+(S.done[i]||0)+'</small></button>'}).join('')+'</div>';
  Array.prototype.forEach.call(document.querySelectorAll('.mc'),function(b){b.addEventListener('click',function(){abrir(Number(b.dataset.i))})})}
-function abrir(i){cur={ti:i,p:pick(T[i].g)(),i:0,tries:0,done:false,seen:false};$('menu').hidden=true;$('game').hidden=false;$('res').hidden=true;
+function abrir(i){cur={ti:i,p:pick(T[i].g)(),i:0,tries:0,done:false,seen:false};$('menu').hidden=true;$('game').hidden=false;$('res').hidden=true;$('chint').hidden=true;$('cinfo').textContent='';
  $('pt').textContent=cur.p.tt;$('ptx').textContent=cur.p.txt;$('c1').style.display=cur.p.circ?'block':'none';render();window.scrollTo(0,0)}
 function fb(m,k){var e=$('fb');if(e){e.textContent=m;e.className='fb '+(k||'')}}
 function render(){
@@ -177,11 +194,15 @@ function reveal(){
 function finish(){
  cur.done=true;S.done[cur.ti]=(S.done[cur.ti]||0)+1;save();render();var p=cur.p;
  $('sum').innerHTML=p.steps.map(function(s){return '<div class="box"><small>'+s.l+'</small><b>'+ansTxt(s).split('  =  ')[0]+'</b></div>'}).join('');
- $('c2').style.display=p.diag?'block':'none';$('leg').textContent=p.leg||'';$('res').hidden=false;$('res').scrollIntoView({behavior:'smooth'})}
+ $('c2').style.display=p.diag?'block':'none';$('leg').textContent=p.leg||'';$('res').hidden=false;if(p.circ&&p.fin)$('chint').hidden=false;(p.circ?$('c1'):$('res')).scrollIntoView({behavior:'smooth'})}
 $('back').addEventListener('click',sair);$('menu2').addEventListener('click',sair);$('again').addEventListener('click',function(){abrir(cur.ti)});
 function sair(){cur=null;$('game').hidden=true;$('menu').hidden=false;menu();window.scrollTo(0,0)}
+$('c1').addEventListener('click',function(e){
+ if(!cur||!cur.done||!cur.p.circ||!cur.p.fin)return;var r=this.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,s=cur.p.circ,c=this;
+ if(c._sw&&Math.hypot(px-c._sw.x,py-c._sw.y)<c._sw.r){s.open=!s.open;$('cinfo').textContent=s.open?'Chave aberta: o circuito está interrompido e não circula corrente.':'Chave fechada: o circuito está funcionando.';return}
+ (c._hit||[]).forEach(function(h){if(Math.abs(px-h.x)<=h.w/2&&Math.abs(py-h.y)<=h.h/2){s.sel=h.i;$('cinfo').textContent=cur.p.fin.info[h.i]}})});
 function loop(ts){
- if(cur){if(cur.p.circ)drawCircuit($('c1'),cur.p.circ,cur.done?cur.p.fin:null);
+ if(cur){if(cur.p.circ)drawCircuit($('c1'),cur.p.circ,cur.done?cur.p.fin:null,ts);
   if(cur.done&&cur.p.diag){var d=cur.p.diag;({ph:dPh,tri:dTri,arg:dArg})[d.t]($('c2'),d,ts)}}
  requestAnimationFrame(loop)}
 $('theme').addEventListener('click',function(){var r=document.documentElement,d=r.getAttribute('data-theme')?r.getAttribute('data-theme')==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.setAttribute('data-theme',d?'light':'dark')});
